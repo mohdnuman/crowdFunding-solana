@@ -125,12 +125,50 @@ const App = () => {
               <p>{(campaign.amountDonated/web3.LAMPORTS_PER_SOL).toString()}</p>
               <p>{campaign.name}</p>
               <p>{campaign.description}</p>
+              <button onClick={()=>donate(campaign.pubkey)} >Donate 0.2 sol</button>
+              <button onClick={()=>withdraw(campaign.pubkey)} >Withdraw 0.2 sol</button>
+
               </div>)
           })}
       </>
     )
     
   };
+
+  const donate=async(pubkey)=>{
+    try{
+      const provider=getProvider();
+      const program= new Program(idl,programID,provider);
+      await program.rpc.donate(new BN(0.2*web3.LAMPORTS_PER_SOL),{
+        accounts:{
+          campaign:pubkey,
+          user:provider.wallet.publicKey,
+          systemProgram:SystemProgram.programId,
+        }
+      });
+      console.log("donated some money to",pubkey.toString());
+      getCampaigns();
+    }catch(error){
+      console.log("Error occured:",error);
+    }
+  }
+
+  const withdraw=async(pubkey)=>{
+    try{
+      const provider=getProvider();
+      const program=new Program(idl,programID,provider);
+      await program.rpc.withdraw(new BN(0.2*web3.LAMPORTS_PER_SOL),{
+        accounts:{
+          campaign:pubkey,
+          user:provider.wallet.publicKey,
+        }
+      });
+      console.log("successfully withdrawn 0.2 sol from",pubkey.toString());
+      getCampaigns();
+    }catch(error){
+      console.log("error occured:",error);
+    }
+  }
 
   useEffect(() => {
     const onLoad = async () => {
